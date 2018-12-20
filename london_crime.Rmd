@@ -1,30 +1,49 @@
 ---
-title: 'London Crime: Exploratory Data Analysis'
+title: 'London Crime Statistics'
 author: "Lena Nguyen"
-date: "12/20/2018"
 output: html_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
 ```
 
-## R Markdown
+## About the dataset
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+I am going to explore the public dataset about crime in London available on [BigQuery](https://console.cloud.google.com/marketplace/details/greater-london-authority/london-crime). This dataset includes data about crimes that occurred by different geographic levels from 2008 until present. I ran a query to get the data about different types of crimes committed in each borough for each month from 2008 until present and downloaded that data into a csv.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+First, let's load the data.
 
-```{r cars}
-summary(cars)
+```{r load_data}
+crime <- read_csv('ldn_crime.csv')
 ```
 
-## Including Plots
+## Types of Crime
 
-You can also embed plots, for example:
+First, let's look at the big picture and see what are the most common types of crime committed in London. 
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r type_city, echo=FALSE}
+# change dataset for plot
+total_crime <- crime %>% 
+  group_by(major_category) %>% 
+  summarise(total = sum(num_crime)) %>%
+  mutate(percentage = round(total / sum(total), digits = 4))
+
+# Make bar plot
+ggplot(total_crime, 
+       aes(x = reorder(major_category, percentage), y = percentage)) + 
+  geom_col(fill = "#037ac4") +
+  geom_text(aes(label = scales::percent(percentage),
+                y= percentage), nudge_y = 0.035, size = 3.5) +
+  coord_flip() +
+  labs(x = 'Type of crime', y = 'Percent of total crime committed') +
+  scale_y_continuous(limits = c(0,0.5), labels = scales::percent) +
+  theme(
+    axis.title = element_text(size = 10, face = "bold"),
+    axis.ticks.y = element_blank()
+  )
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
