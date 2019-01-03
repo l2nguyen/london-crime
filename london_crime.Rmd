@@ -38,12 +38,17 @@ ggplot(total_crime,
   geom_text(aes(label = scales::percent(percentage),
                 y= percentage), nudge_y = 0.035, size = 3.5) +
   coord_flip() +
-  labs(x = 'Type of crime', y = 'Percent of total crime committed') +
-  scale_y_continuous(limits = c(0,0.5), labels = scales::percent) +
+  labs(title = 'Types of crime commited in London (2008-2016)',
+       y = 'Percent of all crimes committed') +
+  scale_y_continuous(limits = c(0,0.5), 
+                     expand = c(0,0), 
+                     labels = scales::percent_format(accuracy = 1)) +
   theme(
-    axis.title = element_text(size = 10, face = "bold"),
-    axis.ticks.y = element_blank()
+    axis.title.x = element_text(size = 10, face = 'bold'),
+    axis.title.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    plot.title = element_text(face = 'bold'),
+    plot.margin = unit(c(0.5,0.5,0.5,0.5), 'cm')
   )
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
