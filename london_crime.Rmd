@@ -1,18 +1,21 @@
 ---
-title: 'London Crime Statistics'
-author: "Lena Nguyen"
-output: html_document
+title: 'London Crime Statistics (2008 - 2016)'
+output: 
+  prettydoc::html_pretty:
+    theme: tactile
+    highlight: github
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      warning = FALSE)
 
 library(tidyverse)
 ```
 
-## About the dataset
+### About the dataset
 
-I am going to explore the public dataset about crime in London available on [BigQuery](https://console.cloud.google.com/marketplace/details/greater-london-authority/london-crime). This dataset includes data about crimes that occurred by different geographic levels from 2008 until present. I ran a query to get the data about different types of crimes committed in each borough for each month from 2008 until present and downloaded that data into a csv.
+I am going to explore the public dataset about crime in London available on [BigQuery](https://console.cloud.google.com/marketplace/details/greater-london-authority/london-crime). This dataset includes data about crimes that occurred by different geographic levels from 2008 until 2016. I ran a query to get the data about different types of crimes committed in each borough for each month from 2008 until 2016 and downloaded that data into a csv.
 
 First, let's load the data.
 
@@ -20,26 +23,44 @@ First, let's load the data.
 crime <- read_csv('ldn_crime.csv')
 ```
 
-## Types of Crime
+### Does the number of crime committed vary by year?
 
-First, let's look at the big picture and see what are the most common types of crime committed in London. 
+First, let's look at how much crime is committed in total in London over the years. There is a slight decrease in the number of incidents in 2013 and 2014 but overall, the level of crime in London has remained about the same over those 8 years.
 
-```{r type_city, echo=FALSE}
+```{r type_borough}
 # change dataset for plot
-total_crime <- crime %>% 
+crime %>% 
+  group_by(year) %>% 
+  summarise(total = sum(num_crime)) %>%
+  ggplot(aes(x = year, y = total)) +
+  geom_col(fill = '#037ac4') +
+  scale_y_continuous(limits = c(0,800000), expand = c(0,0), 
+                     labels = scales::comma) +
+  scale_x_discrete(limits = 2008:2016, expand = c(0,0)) +
+  labs(x = 'Year', y = 'Total Number of Incidents') +
+  theme(
+    axis.title = element_text(size = 10, face = 'bold'),
+    axis.ticks.y = element_blank()
+  )
+```
+
+### What types of crime are committed in London?
+
+Now let's see what are the most common types of crime committed in London from 2008-2016. In the chart below, we can see that the most common type of crime committed in London is theft and handling (41.3% of all crimes committed). 
+
+```{r type_city, echo = FALSE}
+# change dataset for plot
+crime %>% 
   group_by(major_category) %>% 
   summarise(total = sum(num_crime)) %>%
-  mutate(percentage = round(total / sum(total), digits = 4))
-
-# Make bar plot
-ggplot(total_crime, 
-       aes(x = reorder(major_category, percentage), y = percentage)) + 
+  mutate(percentage = round(total / sum(total), digits = 4)) %>%
+  # Make bar plot
+  ggplot(aes(x = reorder(major_category, percentage), y = percentage)) +
   geom_col(fill = "#037ac4") +
   geom_text(aes(label = scales::percent(percentage),
                 y= percentage), nudge_y = 0.035, size = 3.5) +
   coord_flip() +
-  labs(title = 'Types of crime commited in London (2008-2016)',
-       y = 'Percent of all crimes committed') +
+  labs(y = 'Percent of all crimes committed') +
   scale_y_continuous(limits = c(0,0.5), 
                      expand = c(0,0), 
                      labels = scales::percent_format(accuracy = 1)) +
