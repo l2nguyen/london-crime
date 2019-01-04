@@ -26,6 +26,8 @@ query_result <- bq_table_download(table)
 write_csv(query_result, here(file))
 }
 
+#-- Get london crime data for each category of crime by borough, year and month
+
 # SQL query
 sql_query <- '
 SELECT borough, major_category, SUM(value) AS num_crime, year, month
@@ -33,5 +35,4 @@ FROM `bigquery-public-data.london_crime.crime_by_lsoa`
 GROUP BY borough, major_category, year, month
 ORDER BY borough, year, month, major_category
 '
-
 get_crimedata(sql_query, file = 'ldn_crime.csv')
